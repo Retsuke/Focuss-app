@@ -1,0 +1,97 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.fade-in {
+  animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-custom {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  transition: 0.3s;
+}
+
+.card-custom:hover {
+  transform: translateY(-5px);
+}
+
+.form-control {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+}
+
+.form-control:focus {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  box-shadow: none;
+}
+
+.form-control::placeholder {
+  color: #ccc;
+}
+
+.btn {
+  border-radius: 20px;
+  transition: 0.3s;
+}
+
+.btn-primary {
+  background-color: #4e73df;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #2e59d9;
+}
+
+.list-group-item {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.modal-content {
+  background: rgba(30,30,30,0.9);
+  color: white;
+  border-radius: 15px;
+}
+
+.modal-header,
+.modal-footer {
+  border: none;
+}
+
+.btn-close {
+  filter: invert(1);
+}
+
+.container {
+  min-height: auto;
+}
+
+.modal-dialog {
+  margin: 1.75rem auto;
+}

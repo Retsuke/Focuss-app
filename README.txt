@@ -1,0 +1,1 @@
+Ya se realizo la mayoría de las paginas, aun falta darle funcionalidad al contador del pomodoro y hacerlo variar de acuerdo al tiempo de tarea asignada.
