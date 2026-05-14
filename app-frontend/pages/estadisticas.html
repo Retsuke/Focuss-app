@@ -1,42 +1,191 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Estadísticas</title>
-
+<title>Estadísticas — Focuss</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="stylesheet" href="../css/styles.css">
-</head>
+<style>
+.bar-chart-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 110px;
+  padding: 0 4px;
+}
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+}
+.bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, var(--f-accent), rgba(108,92,231,0.35));
+  min-height: 4px;
+  transition: height 0.6s ease;
+}
+.bar.today { background: linear-gradient(180deg, var(--f-green), rgba(0,203,169,0.35)); }
+.bar-day { font-size: 0.66rem; color: var(--f-muted); font-family: 'Syne', sans-serif; }
 
+.streak-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.streak-dot {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  border: 1px solid var(--f-border);
+  background: var(--f-surface2);
+  color: var(--f-muted);
+}
+.streak-dot.done {
+  background: var(--f-accent-soft);
+  border-color: rgba(108,92,231,0.3);
+  color: var(--f-accent);
+}
+.streak-dot.today {
+  background: var(--f-green-soft);
+  border-color: rgba(0,203,169,0.3);
+  color: var(--f-green);
+}
+</style>
+</head>
 <body>
 
-<nav class="navbar navbar-dark bg-dark">
+<nav class="navbar navbar-dark sticky-top">
   <div class="container">
-
-    <a href="../index.html" class="btn btn-outline-light fw-bold px-4 ms-3">
-      Focuss
+    <a class="navbar-brand" href="../index.html">Focuss</a>
+    <a href="dashboard.html" class="btn btn-outline-light btn-sm px-3 ms-auto">
+      <i class="bi bi-grid me-1"></i>Dashboard
     </a>
-
   </div>
 </nav>
 
-<div class="container mt-4">
+<div class="page-content container py-4" style="max-width:800px">
 
-<h3>Estadísticas</h3>
+  <div class="mb-4 fade-in">
+    <p class="f-section-label mb-1">Análisis</p>
+    <h2 class="f-page-title">Estadísticas</h2>
+  </div>
 
-<p>Progreso semanal</p>
+  <div class="row g-3 mb-4 fade-in-1">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-label">Esta semana</div>
+        <div class="stat-value" style="color:var(--f-accent)">5<small style="font-size:1rem">h</small></div>
+        <div class="small mt-1" style="color:var(--f-green)"><i class="bi bi-arrow-up-short"></i>+12%</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-label">Completadas</div>
+        <div class="stat-value">8</div>
+        <div class="small mt-1 text-muted">de 11 totales</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-label">Promedio</div>
+        <div class="stat-value" style="color:var(--f-green)">42<small style="font-size:1rem">m</small></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-label">Racha</div>
+        <div class="stat-value" style="color:#facc15">4<small style="font-size:1rem">d</small></div>
+      </div>
+    </div>
+  </div>
 
-<div class="progress">
-<div class="progress-bar bg-success" style="width: 60%">60%</div>
-</div>
+  <div class="row g-3 mb-4">
+    <div class="col-12 fade-in-2">
+      <p class="f-section-label mb-2">Horas por día</p>
+      <div class="card">
+        <div class="card-body">
+          <div class="bar-chart-wrap" id="barChart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 fade-in-3">
+      <p class="f-section-label mb-2">Metas semanales</p>
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="small">Horas de estudio</span>
+              <span class="small" style="color:var(--f-accent);font-family:'Syne',sans-serif">5 / 8h</span>
+            </div>
+            <div class="progress"><div class="progress-bar bg-accent" style="width:62%"></div></div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="small">Tareas completadas</span>
+              <span class="small" style="color:var(--f-green);font-family:'Syne',sans-serif">8 / 11</span>
+            </div>
+            <div class="progress"><div class="progress-bar bg-green" style="width:72%"></div></div>
+          </div>
+          <div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="small">Sesiones Pomodoro</span>
+              <span class="small text-muted" style="font-family:'Syne',sans-serif">6 / 20</span>
+            </div>
+            <div class="progress"><div class="progress-bar bg-red" style="width:30%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fade-in-4">
+    <p class="f-section-label mb-2">Racha del mes</p>
+    <div class="card">
+      <div class="card-body">
+        <div class="streak-grid" id="streakGrid"></div>
+      </div>
+    </div>
+  </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/script.js"></script>
+<script>checkAuth();</script>
+<script>
+const days  = ["Lun","Mar","Mié","Jue","Vie","Sáb","Hoy"];
+const hours = [1.5, 0, 2, 0.5, 1, 0, 5];
+const maxH  = Math.max(...hours);
+const chart = document.getElementById("barChart");
+days.forEach((d, i) => {
+  const pct = maxH > 0 ? (hours[i] / maxH) * 100 : 4;
+  const col = document.createElement("div");
+  col.className = "bar-col";
+  col.innerHTML = `<div class="bar ${i===6?'today':''}" style="height:${Math.max(pct,4)}%"></div><span class="bar-day">${d}</span>`;
+  chart.appendChild(col);
+});
 
+const grid = document.getElementById("streakGrid");
+const done = [1,2,4,5,7,8,9,11,12,13,14];
+for (let i = 1; i <= 30; i++) {
+  const dot = document.createElement("div");
+  dot.className = `streak-dot ${i===14?'today':done.includes(i)&&i<15?'done':''}`;
+  dot.textContent = i;
+  grid.appendChild(dot);
+}
+</script>
 </body>
 </html>

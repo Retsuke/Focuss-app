@@ -1,68 +1,119 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Tareas</title>
-
+<title>Tareas — Focuss</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="stylesheet" href="../css/styles.css">
 </head>
-
 <body>
 
-<nav class="navbar navbar-dark bg-dark">
+<nav class="navbar navbar-dark sticky-top">
   <div class="container">
-
-    <a href="../index.html" class="btn btn-outline-light fw-bold px-4 ms-3">
-      Focuss
+    <a class="navbar-brand" href="../index.html">Focuss</a>
+    <a href="dashboard.html" class="btn btn-outline-light btn-sm px-3 ms-auto">
+      <i class="bi bi-grid me-1"></i>Dashboard
     </a>
-
   </div>
 </nav>
 
-<div class="container mt-4">
+<div class="page-content container py-4" style="max-width:700px">
 
-<h3>Tareas</h3>
+  <div class="d-flex align-items-start justify-content-between mb-4 fade-in">
+    <div>
+      <p class="f-section-label mb-1">Gestión</p>
+      <h2 class="f-page-title">Tareas</h2>
+    </div>
+    <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#modalTarea">
+      <i class="bi bi-plus-lg me-1"></i>Nueva tarea
+    </button>
+  </div>
 
-<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalTarea">
-+ Nueva tarea
-</button>
-
-<ul class="list-group" id="listaTareas">
-</ul>
+  <div class="card fade-in-1">
+    <div id="taskListContainer">
+      <div id="emptyState" class="text-center text-muted py-5">
+        <i class="bi bi-clipboard fs-2 d-block mb-2" style="color:var(--f-surface2)"></i>
+        <span class="small">Sin tareas por ahora. ¡Agrega tu primera!</span>
+      </div>
+    </div>
+  </div>
 
 </div>
 
-<div class="modal fade" id="modalTarea">
-  <div class="modal-dialog">
+<div class="modal fade" id="modalTarea" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-
       <div class="modal-header">
-        <h5>Nueva tarea</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title">Nueva tarea</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-
       <div class="modal-body">
-
-        <input id="inputTarea" class="form-control mb-2" placeholder="Nombre de tarea">
-
-        <input id="inputTiempo" type="number" class="form-control" placeholder="Tiempo (minutos)" value="25">
-
+        <div class="mb-3">
+          <label class="form-label">Nombre de la tarea</label>
+          <input id="inputTarea" type="text" class="form-control" placeholder="Ej: Estudiar matemáticas">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Tiempo estimado (minutos)</label>
+          <input id="inputTiempo" type="number" class="form-control" value="25" min="1">
+        </div>
       </div>
-
       <div class="modal-footer">
-        <button class="btn btn-success" onclick="agregarTarea()">Guardar</button>
+        <button class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-accent btn-sm" onclick="agregarTarea()">
+          <i class="bi bi-check-lg me-1"></i>Guardar
+        </button>
       </div>
-
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/script.js"></script>
+<script>
+checkAuth();
 
+async function renderTareas() {
+  const container  = document.getElementById("taskListContainer");
+  const emptyState = document.getElementById("emptyState");
+  const tareas     = await cargarTareas();
+
+  container.querySelectorAll("ul").forEach(el => el.remove());
+
+  if (!tareas.length) {
+    emptyState && (emptyState.style.display = "");
+    return;
+  }
+
+  emptyState && (emptyState.style.display = "none");
+  const ul = document.createElement("ul");
+  ul.className = "list-group list-group-flush";
+
+  tareas.forEach(t => {
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex align-items-center gap-3 px-3";
+    li.innerHTML = `
+      <input type="checkbox" class="form-check-input mt-0" ${t.done ? "checked" : ""}
+        onchange="toggleTareaAPI(${t.id}, this.checked, '${t.nombre}', ${t.tiempo})">
+      <span class="flex-grow-1 ${t.done ? 'text-decoration-line-through text-muted' : ''}">${t.nombre}</span>
+      <span class="badge-f-accent me-1">${t.tiempo} min</span>
+      <button class="btn btn-sm" style="background:var(--f-green-soft);border:1px solid rgba(0,203,169,0.2);color:var(--f-green);border-radius:8px;padding:4px 10px"
+        onclick="iniciarTarea(${t.id}, ${t.tiempo}, '${t.nombre}')" title="Iniciar timer">
+        <i class="bi bi-play-fill"></i>
+      </button>
+      <button class="btn btn-sm" style="background:var(--f-red-soft);border:1px solid rgba(255,107,129,0.2);color:var(--f-red);border-radius:8px;padding:4px 10px"
+        onclick="eliminarTarea(${t.id})">
+        <i class="bi bi-trash"></i>
+      </button>
+    `;
+    ul.appendChild(li);
+  });
+
+  container.appendChild(ul);
+}
+
+document.addEventListener("DOMContentLoaded", renderTareas);
+</script>
 </body>
 </html>

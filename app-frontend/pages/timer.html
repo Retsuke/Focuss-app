@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timer — Focuss</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+.mode-pills .btn {
+  border-radius: 40px;
+  font-size: 0.8rem;
+  padding: 6px 18px;
+  border: 1px solid var(--f-border);
+  background: transparent;
+  color: var(--f-muted);
+}
+.mode-pills .btn.active {
+  background: var(--f-surface2);
+  color: var(--bs-body-color);
+  border-color: rgba(108,92,231,0.3);
+}
+
+.ring-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+.ring-svg { transform: rotate(-90deg); }
+.ring-bg  { fill: none; stroke: var(--f-surface2); stroke-width: 6; }
+.ring-fg  {
+  fill: none;
+  stroke: var(--f-accent);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 502;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear, stroke 0.4s;
+  filter: drop-shadow(0 0 8px rgba(108,92,231,0.5));
+}
+.ring-fg.break { stroke: var(--f-green); filter: drop-shadow(0 0 8px rgba(0,203,169,0.5)); }
+
+.ring-display {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.ring-time {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.ring-mode {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--f-muted);
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="../index.html">Focuss</a>
+    <a href="dashboard.html" class="btn btn-outline-light btn-sm px-3 ms-auto">
+      <i class="bi bi-grid me-1"></i>Dashboard
+    </a>
+  </div>
+</nav>
+
+<div class="page-content container py-4" style="max-width:560px">
+
+  <div class="mb-4 fade-in">
+    <p class="f-section-label mb-1">Técnica Pomodoro</p>
+    <h2 class="f-page-title">Temporizador</h2>
+  </div>
+
+  <div class="d-flex gap-2 mb-4 mode-pills fade-in-1">
+    <button class="btn active" id="tabFoco" onclick="setMode('focus')">Foco</button>
+    <button class="btn" id="tabShort" onclick="setMode('short')">Descanso corto</button>
+    <button class="btn" id="tabLong" onclick="setMode('long')">Descanso largo</button>
+  </div>
+
+  <div class="text-center mb-4 fade-in-1">
+    <div class="ring-container">
+      <svg class="ring-svg" width="200" height="200" viewBox="0 0 200 200">
+        <circle class="ring-bg" cx="100" cy="100" r="80"/>
+        <circle class="ring-fg" id="ringFg" cx="100" cy="100" r="80"/>
+      </svg>
+      <div class="ring-display">
+        <div class="ring-time" id="temporizador">25:00</div>
+        <div class="ring-mode" id="modeLabel">Foco</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center gap-3 mb-4 fade-in-2">
+    <button class="btn btn-outline-light px-4" onclick="resetTimer()">
+      <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+    </button>
+    <button class="btn btn-accent px-5" id="btnStart" onclick="toggleTimer()">
+      <i class="bi bi-play-fill me-1"></i>Iniciar
+    </button>
+  </div>
+
+  <div class="fade-in-3">
+    <p class="f-section-label mb-2">Cola de tareas</p>
+    <div class="card">
+      <div id="listaTimer">
+        <p class="text-center text-muted small py-4">
+          No hay tareas. <a href="tareas.html" style="color:var(--f-accent)">Agrega algunas</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toastFin" style="display:none;position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:999;min-width:300px;max-width:90vw">
+  <div style="background:var(--f-surface);border:1px solid rgba(0,203,169,0.3);border-radius:var(--f-radius);padding:16px 20px;box-shadow:0 16px 40px rgba(0,0,0,0.5);display:flex;align-items:flex-start;gap:14px">
+    <i class="bi bi-check-circle-fill" style="color:var(--f-green);font-size:1.3rem;flex-shrink:0;margin-top:1px"></i>
+    <div class="flex-grow-1">
+      <div class="small fw-bold mb-1" id="toastTitulo">¡Sesión completada!</div>
+      <div class="small text-muted" id="toastMensaje">Tarea finalizada. ¡Buen trabajo!</div>
+    </div>
+    <button onclick="cerrarToast()" style="background:none;border:none;color:var(--f-muted);font-size:1.1rem;cursor:pointer;padding:0;line-height:1">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+</div>
+<script src="../js/script.js"></script>
+<script>
+const MODES = {
+  focus: { label:"Foco",           minutes:25, tab:"tabFoco"  },
+  short: { label:"Descanso corto", minutes:5,  tab:"tabShort" },
+  long:  { label:"Descanso largo", minutes:15, tab:"tabLong"  },
+};
+const CIRCUMFERENCE = 2 * Math.PI * 80;
+let currentMode = "focus", totalSec = 1500, remaining = 1500, running = false, interval = null;
+
+let tareaActivaIndex = null;
+
+function timerFinalizado() {
+  running = false;
+  document.getElementById("btnStart").innerHTML = '<i class="bi bi-play-fill me-1"></i>Iniciar';
+
+  if (currentMode === "focus" && tareaActivaIndex !== null) {
+    let tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+    if (tareas[tareaActivaIndex]) {
+      tareas[tareaActivaIndex].done = true;
+      localStorage.setItem("tareas", JSON.stringify(tareas));
+      document.getElementById("toastTitulo").textContent = "¡Sesión completada!";
+      document.getElementById("toastMensaje").textContent = `"${tareas[tareaActivaIndex].nombre}" marcada como completada.`;
+    }
+  } else if (currentMode === "focus") {
+    document.getElementById("toastTitulo").textContent = "¡Sesión de foco completada!";
+    document.getElementById("toastMensaje").textContent = "Tómate un descanso bien merecido.";
+  } else {
+    document.getElementById("toastTitulo").textContent = "¡Descanso terminado!";
+    document.getElementById("toastMensaje").textContent = "Es hora de volver al foco.";
+  }
+
+  if (Notification.permission === "granted") {
+    new Notification("Focuss", { body: document.getElementById("toastMensaje").textContent });
+  }
+
+  document.getElementById("toastFin").style.display = "block";
+  setTimeout(cerrarToast, 6000);
+}
+
+function cerrarToast() {
+  document.getElementById("toastFin").style.display = "none";
+}
+
+function setMode(mode) {
+  clearInterval(interval); running = false;
+  currentMode = mode;
+  totalSec = MODES[mode].minutes * 60;
+  remaining = totalSec;
+  document.getElementById("modeLabel").textContent = MODES[mode].label;
+  document.getElementById("btnStart").innerHTML = '<i class="bi bi-play-fill me-1"></i>Iniciar';
+  Object.keys(MODES).forEach(m => document.getElementById(MODES[m].tab).classList.remove("active"));
+  document.getElementById(MODES[mode].tab).classList.add("active");
+  document.getElementById("ringFg").className = "ring-fg" + (mode !== "focus" ? " break" : "");
+  updateDisplay();
+}
+
+function updateDisplay() {
+  const m = String(Math.floor(remaining / 60)).padStart(2, "0");
+  const s = String(remaining % 60).padStart(2, "0");
+  document.getElementById("temporizador").textContent = `${m}:${s}`;
+  document.getElementById("ringFg").style.strokeDashoffset = CIRCUMFERENCE * (1 - remaining / totalSec);
+}
+
+function toggleTimer() {
+  if (running) {
+    clearInterval(interval); running = false;
+    document.getElementById("btnStart").innerHTML = '<i class="bi bi-play-fill me-1"></i>Continuar';
+  } else {
+    running = true;
+    document.getElementById("btnStart").innerHTML = '<i class="bi bi-pause-fill me-1"></i>Pausar';
+    interval = setInterval(() => {
+      if (remaining <= 0) { clearInterval(interval); timerFinalizado(); return; }
+      remaining--; updateDisplay();
+    }, 1000);
+  }
+}
+
+function resetTimer() {
+  clearInterval(interval); running = false; remaining = totalSec;
+  document.getElementById("btnStart").innerHTML = '<i class="bi bi-play-fill me-1"></i>Iniciar';
+  updateDisplay();
+}
+
+function resaltarTareaActiva(index) {
+  document.querySelectorAll(".timer-task-row").forEach((row, i) => {
+    row.style.background = i === index ? "rgba(108,92,231,0.08)" : "";
+    row.style.borderLeft = i === index ? "3px solid var(--f-accent)" : "3px solid transparent";
+  });
+}
+
+function seleccionarTarea(index) {
+  const tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+  const tarea = tareas[index];
+  if (!tarea) return;
+  clearInterval(interval); running = false;
+  tareaActivaIndex = index;
+  totalSec = parseInt(tarea.tiempo) * 60;
+  remaining = totalSec;
+  document.getElementById("modeLabel").textContent = tarea.nombre;
+  document.getElementById("btnStart").innerHTML = '<i class="bi bi-play-fill me-1"></i>Iniciar';
+  updateDisplay();
+  resaltarTareaActiva(index);
+}
+
+function renderTimerTasks() {
+  const lista = document.getElementById("listaTimer");
+  const tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+  if (!tareas.length) return;
+  lista.innerHTML = "";
+  const ul = document.createElement("ul");
+  ul.className = "list-group list-group-flush";
+  tareas.forEach((t, i) => {
+    const li = document.createElement("li");
+    li.className = "list-group-item timer-task-row d-flex align-items-center gap-3 px-3";
+    li.style.borderLeft = "3px solid transparent";
+    li.style.transition = "all 0.2s";
+    li.style.cursor = "pointer";
+    li.innerHTML = `
+      <span class="flex-grow-1">${t.nombre}</span>
+      <span class="badge-f-accent">${t.tiempo} min</span>
+      <button class="btn btn-sm" style="background:var(--f-green-soft);border:1px solid rgba(0,203,169,0.2);color:var(--f-green);border-radius:8px;padding:4px 12px;white-space:nowrap" onclick="seleccionarTarea(${i})">
+        <i class="bi bi-play-fill me-1"></i>Usar
+      </button>
+    `;
+    ul.appendChild(li);
+  });
+  lista.appendChild(ul);
+}
+
+updateDisplay();
+document.addEventListener("DOMContentLoaded", () => {
+  renderTimerTasks();
+
+  if (Notification.permission === "default") Notification.requestPermission();
+
+  const activoIndex = localStorage.getItem("tareaActiva");
+  const demoTarea   = sessionStorage.getItem("demoTareaActiva");
+
+  if (activoIndex !== null) {
+    const tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+    const tarea  = tareas[parseInt(activoIndex)];
+    if (tarea) {
+      tareaActivaIndex = parseInt(activoIndex);
+      totalSec  = parseInt(tarea.tiempo) * 60;
+      remaining = totalSec;
+      document.getElementById("modeLabel").textContent = tarea.nombre;
+      updateDisplay();
+      resaltarTareaActiva(tareaActivaIndex);
+    }
+    localStorage.removeItem("tareaActiva");
+  } else if (demoTarea) {
+    const tarea = JSON.parse(demoTarea);
+    totalSec  = parseInt(tarea.tiempo) * 60;
+    remaining = totalSec;
+    document.getElementById("modeLabel").textContent = tarea.nombre;
+    updateDisplay();
+    sessionStorage.removeItem("demoTareaActiva");
+  }
+});
+</script>
+</body>
+</html>

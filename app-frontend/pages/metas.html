@@ -1,42 +1,157 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Metas</title>
-
+<title>Metas — Focuss</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="stylesheet" href="../css/styles.css">
+<style>
+.meta-card {
+  background: var(--f-surface);
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-radius);
+  padding: 20px;
+  transition: border-color 0.2s;
+}
+.meta-card:hover { border-color: rgba(108,92,231,0.3); }
+</style>
 </head>
-
 <body>
 
-<nav class="navbar navbar-dark bg-dark">
+<nav class="navbar navbar-dark sticky-top">
   <div class="container">
-
-    <a href="../index.html" class="btn btn-outline-light fw-bold px-4 ms-3">
-      Focuss
+    <a class="navbar-brand" href="../index.html">Focuss</a>
+    <a href="dashboard.html" class="btn btn-outline-light btn-sm px-3 ms-auto">
+      <i class="bi bi-grid me-1"></i>Dashboard
     </a>
-
   </div>
 </nav>
 
-<div class="container mt-4">
+<div class="page-content container py-4" style="max-width:700px">
 
-<h3>Metas</h3>
+  <div class="d-flex align-items-start justify-content-between mb-4 fade-in">
+    <div>
+      <p class="f-section-label mb-1">Objetivos</p>
+      <h2 class="f-page-title">Metas</h2>
+    </div>
+    <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#modalMeta">
+      <i class="bi bi-plus-lg me-1"></i>Nueva meta
+    </button>
+  </div>
 
-<button class="btn btn-primary mb-3">+ Nueva meta</button>
+  <div class="d-flex flex-column gap-3" id="metasContainer">
+    <div id="metasEmpty" class="text-center text-muted py-5">
+      <i class="bi bi-trophy fs-2 d-block mb-2" style="color:var(--f-surface2)"></i>
+      <span class="small">Sin metas por ahora. ¡Agrega tu primera!</span>
+    </div>
+  </div>
 
-<div class="progress">
-<div class="progress-bar bg-info" style="width: 40%">40%</div>
 </div>
 
+<div class="modal fade" id="modalMeta" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nueva meta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Descripción</label>
+          <input id="metaInput" type="text" class="form-control" placeholder="Ej: Leer 12 libros este año">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-accent btn-sm" onclick="agregarMeta()">
+          <i class="bi bi-check-lg me-1"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/script.js"></script>
+<script>
+checkAuth();
 
+const colores = [
+  { badge: "badge-f-accent", bar: "bg-accent", color: "var(--f-accent)", icon: "bi-flag" },
+  { badge: "badge-f-green",  bar: "bg-green",  color: "var(--f-green)",  icon: "bi-trophy" },
+  { badge: "badge-f-red",    bar: "bg-red",    color: "var(--f-red)",    icon: "bi-star" },
+];
+
+function crearMetaCard(meta, index) {
+  const estilo = colores[index % colores.length];
+  const div = document.createElement("div");
+  div.className = "meta-card fade-in";
+  div.innerHTML = `
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <span class="fw-600">
+        <i class="bi ${estilo.icon} me-2" style="color:${estilo.color}"></i>${meta.descripcion}
+      </span>
+      <span class="${estilo.badge}">${meta.progreso}%</span>
+    </div>
+    <div class="progress mb-1">
+      <div class="progress-bar ${estilo.bar}" style="width:${meta.progreso}%"></div>
+    </div>
+    <small class="text-muted">Progreso actual</small>
+  `;
+  return div;
+}
+
+async function renderMetas() {
+  const container = document.getElementById("metasContainer");
+  const empty     = document.getElementById("metasEmpty");
+  const usuario   = getUsuarioActual();
+  if (!usuario) return;
+
+  try {
+    const res   = await fetch(`${API_URL}/metas/usuario/${usuario.id}`);
+    const metas = await res.json();
+
+    container.querySelectorAll(".meta-card").forEach(el => el.remove());
+
+    if (!metas.length) {
+      empty && (empty.style.display = "");
+      return;
+    }
+
+    empty && (empty.style.display = "none");
+    metas.forEach((m, i) => container.appendChild(crearMetaCard(m, i)));
+
+  } catch (e) {
+    console.error("Error al cargar metas");
+  }
+}
+
+async function agregarMeta() {
+  const input   = document.getElementById("metaInput");
+  const texto   = input.value.trim();
+  const usuario = getUsuarioActual();
+  if (!texto) return;
+
+  try {
+    const res = await fetch(`${API_URL}/metas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ descripcion: texto, progreso: 0, usuarioId: usuario.id })
+    });
+
+    if (res.ok) {
+      input.value = "";
+      bootstrap.Modal.getInstance(document.getElementById("modalMeta")).hide();
+      renderMetas();
+    }
+  } catch (e) {
+    alert("No se pudo conectar con el servidor.");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", renderMetas);
+</script>
 </body>
 </html>

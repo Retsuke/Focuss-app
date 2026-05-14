@@ -1,44 +1,119 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Registro</title>
-
+<title>Registro — Focuss</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="stylesheet" href="../css/styles.css">
+<style>
+.auth-wrapper {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+.auth-card { width: 100%; max-width: 400px; }
+.auth-icon {
+  width: 54px; height: 54px;
+  border-radius: 14px;
+  background: var(--f-green-soft);
+  border: 1px solid rgba(0,203,169,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  color: var(--f-green);
+  margin: 0 auto 18px;
+}
+</style>
 </head>
-
 <body>
 
-<nav class="navbar navbar-dark bg-dark">
+<nav class="navbar navbar-dark sticky-top">
   <div class="container">
-
-    <a href="../index.html" class="btn btn-outline-light fw-bold px-4 ms-3">
-      Focuss
-    </a>
-
+    <a class="navbar-brand" href="../index.html">Focuss</a>
+    <a href="login.html" class="btn btn-outline-light btn-sm px-3 ms-auto">Iniciar sesión</a>
   </div>
 </nav>
 
-<div class="container mt-5">
+<div class="page-content auth-wrapper">
+  <div class="auth-card fade-in">
 
-<h3>Registro</h3>
+    <div class="text-center mb-4">
+      <div class="auth-icon"><i class="bi bi-person-plus"></i></div>
+      <h2 class="f-page-title">Crear cuenta</h2>
+      <p class="text-muted small mt-1">Empieza a dominar tu tiempo hoy</p>
+    </div>
 
-<input class="form-control mb-2" placeholder="Nombre">
-<input class="form-control mb-2" placeholder="Email">
-<input type="password" class="form-control mb-2" placeholder="Contraseña">
+    <div class="card">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input id="regNombre" type="text" class="form-control" placeholder="Tu nombre" autocomplete="name">
+          <div class="field-error" id="errorNombre">El nombre no puede estar vacío</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input id="regEmail" type="email" class="form-control" placeholder="tu@email.com" autocomplete="email">
+          <div class="field-error" id="errorEmail">Ingresa un email válido</div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Contraseña</label>
+          <input id="regPassword" type="password" class="form-control" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+          <div class="field-error" id="errorPassword">La contraseña debe tener al menos 8 caracteres</div>
+        </div>
+        <button class="btn btn-accent w-100" onclick="registerValidado()">
+          <i class="bi bi-arrow-right-circle-fill me-2"></i>Crear cuenta gratis
+        </button>
+      </div>
+    </div>
 
-<button type="button" class="btn btn-primary w-100" onclick="register()">
-  Crear cuenta
-</button>
+    <p class="text-center text-muted small mt-3">
+      ¿Ya tienes cuenta?
+      <a href="login.html" class="text-decoration-none" style="color:var(--f-accent);font-weight:600">Inicia sesión</a>
+    </p>
 
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/script.js"></script>
+<script>
+function setFieldState(inputId, errorId, valid, msg) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(errorId);
+  input.classList.toggle("is-invalid", !valid);
+  input.classList.toggle("is-valid", valid);
+  if (msg) error.textContent = msg;
+  error.classList.toggle("visible", !valid);
+}
 
+function registerValidado() {
+  const nombre   = document.getElementById("regNombre").value.trim();
+  const email    = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPassword").value;
+  const nombreOk = nombre.length > 0;
+  const emailOk  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const passOk   = password.length >= 8;
+
+  setFieldState("regNombre",   "errorNombre",   nombreOk, "El nombre no puede estar vacío");
+  setFieldState("regEmail",    "errorEmail",    emailOk,  "Ingresa un email válido");
+  setFieldState("regPassword", "errorPassword", passOk,   "La contraseña debe tener al menos 8 caracteres");
+
+  if (nombreOk && emailOk && passOk) register();
+}
+
+document.getElementById("regNombre").addEventListener("input", function() {
+  setFieldState("regNombre", "errorNombre", this.value.trim().length > 0, "El nombre no puede estar vacío");
+});
+document.getElementById("regEmail").addEventListener("input", function() {
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value.trim());
+  setFieldState("regEmail", "errorEmail", ok, "Ingresa un email válido");
+});
+document.getElementById("regPassword").addEventListener("input", function() {
+  setFieldState("regPassword", "errorPassword", this.value.length >= 8, "La contraseña debe tener al menos 8 caracteres");
+});
+</script>
 </body>
 </html>
