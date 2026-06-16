@@ -1,11 +1,20 @@
 package com.focus.focuss_backend.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "tareas")
 public class Tarea {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nombre;
     private int tiempo;
     private boolean done;
     private Long usuarioId;
+
+    public Tarea() {}
 
     public Tarea(Long id, String nombre, int tiempo, boolean done, Long usuarioId) {
         this.id = id;

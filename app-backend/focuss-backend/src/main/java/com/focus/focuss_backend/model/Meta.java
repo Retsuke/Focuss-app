@@ -1,10 +1,19 @@
 package com.focus.focuss_backend.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "metas")
 public class Meta {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String descripcion;
     private int progreso;
     private Long usuarioId;
+
+    public Meta() {}
 
     public Meta(Long id, String descripcion, int progreso, Long usuarioId) {
         this.id = id;

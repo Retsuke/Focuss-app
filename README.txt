@@ -21,6 +21,9 @@ Se aplican las tecnologías solicitadas para el Avance 2.
 
 ```
 Focuss/
+├── docs/
+├── scripts/
+│   └── focuss_db.sql
 ├── app-frontend/
 │   ├── index.html
 │   ├── css/
@@ -66,16 +69,21 @@ Focuss/
 
 ### 1. Levantar el backend
 
+1. Ejecutar el script scripts/focuss_db.sql en MySQL Workbench
+2. Verificar que la base de datos focuss_db se creó correctamente
+
+### 2. Levantar el backend
+
 1. Abrir la carpeta `app-backend/focuss-backend` en IntelliJ IDEA
 2. Ejecutar la clase `FocussBackendApplication.java`
 3. El servidor estará disponible en `http://localhost:8080`
 
-### 2. Abrir el frontend
+### 3. Abrir el frontend
 
 1. Abrir la carpeta `app-frontend` en VSCode
 2. Abrir `index.html` directamente en el navegador
 
-> El backend debe estar corriendo antes de usar el frontend.
+> La base de datos y el backend debe estar corriendo antes de usar el frontend.
 
 ---
 
@@ -108,7 +116,7 @@ Focuss/
 
 ## Usuarios de prueba
 
-Data sintética agregada en cada usuario.
+Data de prueba agregada en cada usuario.
 
 | Nombre       | Email               | Contraseña |
 |--------------|---------------------|------------|
@@ -131,9 +139,8 @@ Data sintética agregada en cada usuario.
 
 ---
 
-## Notas
+## Notas (Cambios recientes)
 
-- Por el momento, como son datos sintéticos se guardan en texto plano, se le añadirá base de datos en avances futuros
-- Por el motivo de arriba, los datos se pierden al reiniciar.
-- Se realizó un cambio de imagen con respecto a la versión anterior.
+- Se añadió scripts para la base de datos
+- Ahora los datos persisten en MySQL, ya no se pierden al reiniciar.
 - Queda pendiente el método de negocio con cuenta premium, actualmente posee un demo y una cuenta gratuita

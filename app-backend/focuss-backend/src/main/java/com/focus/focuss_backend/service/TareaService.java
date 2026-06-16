@@ -29,10 +29,14 @@ public class TareaService {
     }
 
     public Tarea update(Tarea tarea) {
-        return tareaRepository.update(tarea);
+        return tareaRepository.save(tarea);
     }
 
     public boolean deleteById(Long id) {
-        return tareaRepository.deleteById(id);
+        if (tareaRepository.existsById(id)) {
+            tareaRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
