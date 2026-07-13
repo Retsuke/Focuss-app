@@ -4,6 +4,38 @@ function getUsuarioActual() {
   return JSON.parse(localStorage.getItem("usuarioActual"));
 }
 
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+function esPremium() {
+  const usuario = getUsuarioActual();
+  return !!usuario && usuario.tipoCuenta === "PREMIUM";
+}
+
+async function actualizarAPremium() {
+  const usuario = getUsuarioActual();
+  if (!usuario) return false;
+
+  const res = await fetch(`${API_URL}/usuarios/${usuario.id}/upgrade`, {
+    method: "PUT",
+    headers: authHeaders()
+  });
+
+  if (!res.ok) return false;
+
+  const actualizado = await res.json();
+  localStorage.setItem("usuarioActual", JSON.stringify(actualizado));
+  return true;
+}
+
+function authHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + getToken()
+  };
+}
+
 function checkAuth() {
   const logged = localStorage.getItem("logged") === "true";
   if (!logged) window.location.href = "login.html";
@@ -12,6 +44,7 @@ function checkAuth() {
 function logout() {
   localStorage.removeItem("logged");
   localStorage.removeItem("usuarioActual");
+  localStorage.removeItem("token");
   localStorage.removeItem("tareaActiva");
   window.location.href = "../index.html";
 }
@@ -37,9 +70,10 @@ async function login() {
       return;
     }
 
-    const usuario = await res.json();
+    const data = await res.json();
     localStorage.setItem("logged", "true");
-    localStorage.setItem("usuarioActual", JSON.stringify(usuario));
+    localStorage.setItem("usuarioActual", JSON.stringify(data.usuario));
+    localStorage.setItem("token", data.token);
     window.location.href = "dashboard.html";
 
   } catch (e) {
@@ -69,9 +103,10 @@ async function register() {
       return;
     }
 
-    const usuario = await res.json();
+    const data = await res.json();
     localStorage.setItem("logged", "true");
-    localStorage.setItem("usuarioActual", JSON.stringify(usuario));
+    localStorage.setItem("usuarioActual", JSON.stringify(data.usuario));
+    localStorage.setItem("token", data.token);
     window.location.href = "dashboard.html";
 
   } catch (e) {
@@ -83,7 +118,9 @@ async function cargarTareas() {
   const usuario = getUsuarioActual();
   if (!usuario) return [];
   try {
-    const res = await fetch(`${API_URL}/tareas/usuario/${usuario.id}`);
+    const res = await fetch(`${API_URL}/tareas/usuario/${usuario.id}`, {
+      headers: authHeaders()
+    });
     return await res.json();
   } catch (e) {
     return [];
@@ -102,9 +139,15 @@ async function agregarTarea() {
   try {
     const res = await fetch(`${API_URL}/tareas`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(),
       body: JSON.stringify({ nombre: texto, tiempo, done: false, usuarioId: usuario.id })
     });
+
+    if (res.status === 402) {
+      const data = await res.json();
+      alert(data.error);
+      return;
+    }
 
     if (res.ok) {
       input.value = "";
@@ -123,7 +166,10 @@ async function agregarTarea() {
 
 async function eliminarTarea(id) {
   try {
-    const res = await fetch(`${API_URL}/tareas/${id}`, { method: "DELETE" });
+    const res = await fetch(`${API_URL}/tareas/${id}`, {
+      method: "DELETE",
+      headers: authHeaders()
+    });
     if (res.ok && typeof renderTareas === "function") renderTareas();
   } catch (e) {
     alert("No se pudo conectar con el servidor.");
@@ -135,7 +181,7 @@ async function toggleTareaAPI(id, done, nombre, tiempo) {
   try {
     await fetch(`${API_URL}/tareas/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(),
       body: JSON.stringify({ id, nombre, tiempo, done, usuarioId: usuario.id })
     });
   } catch (e) {
@@ -148,7 +194,7 @@ async function cambiarTiempo(id, nuevoTiempo, nombre, done) {
   try {
     await fetch(`${API_URL}/tareas/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(),
       body: JSON.stringify({ id, nombre, tiempo: parseInt(nuevoTiempo), done, usuarioId: usuario.id })
     });
   } catch (e) {

@@ -91,10 +91,14 @@
       </div>
       <div class="info-row">
         <small class="text-muted">Plan</small>
-        <span class="badge-f-accent">Gratuito</span>
+        <span class="badge-f-accent" id="infoPlan">Gratuito</span>
       </div>
     </div>
   </div>
+
+  <a href="checkout.html" id="btnUpgrade" class="btn btn-accent w-100 mb-3 fade-in-3" style="display:none">
+    <i class="bi bi-stars me-2"></i>Actualizar a Premium
+  </a>
 
   <button class="btn w-100 fade-in-3" style="background:var(--f-red-soft);border:1px solid rgba(255,107,129,0.2);color:var(--f-red);border-radius:40px;font-weight:600" onclick="logout()">
     <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
@@ -121,6 +125,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("infoNombre").textContent    = usuario.nombre;
     document.getElementById("infoEmail").textContent     = usuario.email;
     document.getElementById("infoDesde").textContent     = desde;
+
+    const premium = usuario.tipoCuenta === "PREMIUM";
+    document.getElementById("infoPlan").textContent = premium ? "Premium" : "Gratuito";
+    document.getElementById("btnUpgrade").style.display = premium ? "none" : "";
   }
 
   const tareas      = await cargarTareas();

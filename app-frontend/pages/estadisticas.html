@@ -109,62 +109,78 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-12 fade-in-2">
-      <p class="f-section-label mb-2">Horas por día</p>
+  <div id="estadisticasAvanzadas">
+    <div class="row g-3 mb-4">
+      <div class="col-12 fade-in-2">
+        <p class="f-section-label mb-2">Horas por día</p>
+        <div class="card">
+          <div class="card-body">
+            <div class="bar-chart-wrap" id="barChart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 fade-in-3">
+        <p class="f-section-label mb-2">Metas semanales</p>
+        <div class="card">
+          <div class="card-body">
+            <div class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="small">Horas de estudio</span>
+                <span class="small" style="color:var(--f-accent);font-family:'Syne',sans-serif">5 / 8h</span>
+              </div>
+              <div class="progress"><div class="progress-bar bg-accent" style="width:62%"></div></div>
+            </div>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="small">Tareas completadas</span>
+                <span class="small" style="color:var(--f-green);font-family:'Syne',sans-serif">8 / 11</span>
+              </div>
+              <div class="progress"><div class="progress-bar bg-green" style="width:72%"></div></div>
+            </div>
+            <div>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="small">Sesiones Pomodoro</span>
+                <span class="small text-muted" style="font-family:'Syne',sans-serif">6 / 20</span>
+              </div>
+              <div class="progress"><div class="progress-bar bg-red" style="width:30%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-in-4">
+      <p class="f-section-label mb-2">Racha del mes</p>
       <div class="card">
         <div class="card-body">
-          <div class="bar-chart-wrap" id="barChart"></div>
+          <div class="streak-grid" id="streakGrid"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-12 fade-in-3">
-      <p class="f-section-label mb-2">Metas semanales</p>
-      <div class="card">
-        <div class="card-body">
-          <div class="mb-3">
-            <div class="d-flex justify-content-between mb-1">
-              <span class="small">Horas de estudio</span>
-              <span class="small" style="color:var(--f-accent);font-family:'Syne',sans-serif">5 / 8h</span>
-            </div>
-            <div class="progress"><div class="progress-bar bg-accent" style="width:62%"></div></div>
-          </div>
-          <div class="mb-3">
-            <div class="d-flex justify-content-between mb-1">
-              <span class="small">Tareas completadas</span>
-              <span class="small" style="color:var(--f-green);font-family:'Syne',sans-serif">8 / 11</span>
-            </div>
-            <div class="progress"><div class="progress-bar bg-green" style="width:72%"></div></div>
-          </div>
-          <div>
-            <div class="d-flex justify-content-between mb-1">
-              <span class="small">Sesiones Pomodoro</span>
-              <span class="small text-muted" style="font-family:'Syne',sans-serif">6 / 20</span>
-            </div>
-            <div class="progress"><div class="progress-bar bg-red" style="width:30%"></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="fade-in-4">
-    <p class="f-section-label mb-2">Racha del mes</p>
-    <div class="card">
-      <div class="card-body">
-        <div class="streak-grid" id="streakGrid"></div>
-      </div>
-    </div>
+  <div id="estadisticasUpsell" style="display:none" class="text-center py-4 fade-in-2">
+    <i class="bi bi-lock-fill fs-2 d-block mb-2" style="color:var(--f-accent)"></i>
+    <p class="fw-600 mb-1">Estadísticas avanzadas</p>
+    <p class="text-muted small mb-3">Las gráficas de progreso, metas semanales y racha del mes son parte del plan Premium.</p>
+    <a href="checkout.html" class="btn btn-accent btn-sm px-4">Actualizar a Premium</a>
   </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/script.js"></script>
-<script>checkAuth();</script>
+<script>
+checkAuth();
+
+if (!esPremium()) {
+  document.getElementById("estadisticasAvanzadas").style.display = "none";
+  document.getElementById("estadisticasUpsell").style.display = "block";
+}
+</script>
 <script>
 const days  = ["Lun","Mar","Mié","Jue","Vie","Sáb","Hoy"];
 const hours = [1.5, 0, 2, 0.5, 1, 0, 5];

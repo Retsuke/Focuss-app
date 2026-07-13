@@ -88,18 +88,35 @@ function crearMetaCard(meta, index) {
   const estilo = colores[index % colores.length];
   const div = document.createElement("div");
   div.className = "meta-card fade-in";
-  div.innerHTML = `
-    <div class="d-flex align-items-center justify-content-between mb-2">
-      <span class="fw-600">
-        <i class="bi ${estilo.icon} me-2" style="color:${estilo.color}"></i>${meta.descripcion}
-      </span>
-      <span class="${estilo.badge}">${meta.progreso}%</span>
-    </div>
-    <div class="progress mb-1">
-      <div class="progress-bar ${estilo.bar}" style="width:${meta.progreso}%"></div>
-    </div>
-    <small class="text-muted">Progreso actual</small>
-  `;
+
+  const top = document.createElement("div");
+  top.className = "d-flex align-items-center justify-content-between mb-2";
+
+  const nombre = document.createElement("span");
+  nombre.className = "fw-600";
+  const icon = document.createElement("i");
+  icon.className = `bi ${estilo.icon} me-2`;
+  icon.style.color = estilo.color;
+  nombre.append(icon, document.createTextNode(meta.descripcion));
+
+  const badge = document.createElement("span");
+  badge.className = estilo.badge;
+  badge.textContent = `${meta.progreso}%`;
+
+  top.append(nombre, badge);
+
+  const progressWrap = document.createElement("div");
+  progressWrap.className = "progress mb-1";
+  const progressBar = document.createElement("div");
+  progressBar.className = `progress-bar ${estilo.bar}`;
+  progressBar.style.width = `${meta.progreso}%`;
+  progressWrap.appendChild(progressBar);
+
+  const label = document.createElement("small");
+  label.className = "text-muted";
+  label.textContent = "Progreso actual";
+
+  div.append(top, progressWrap, label);
   return div;
 }
 
@@ -110,7 +127,9 @@ async function renderMetas() {
   if (!usuario) return;
 
   try {
-    const res   = await fetch(`${API_URL}/metas/usuario/${usuario.id}`);
+    const res   = await fetch(`${API_URL}/metas/usuario/${usuario.id}`, {
+      headers: authHeaders()
+    });
     const metas = await res.json();
 
     container.querySelectorAll(".meta-card").forEach(el => el.remove());
@@ -137,9 +156,15 @@ async function agregarMeta() {
   try {
     const res = await fetch(`${API_URL}/metas`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(),
       body: JSON.stringify({ descripcion: texto, progreso: 0, usuarioId: usuario.id })
     });
+
+    if (res.status === 402) {
+      const data = await res.json();
+      alert(data.error);
+      return;
+    }
 
     if (res.ok) {
       input.value = "";

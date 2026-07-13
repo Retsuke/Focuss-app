@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Actualizar a Premium — Focuss</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+.plan-summary {
+  background: var(--f-surface);
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-radius);
+  padding: 20px;
+}
+.plan-summary li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  color: var(--f-muted);
+  font-size: 0.9rem;
+}
+.plan-summary li i { color: var(--f-green); }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="../index.html">Focuss</a>
+    <a href="perfil.html" class="btn btn-outline-light btn-sm px-3 ms-auto">
+      <i class="bi bi-arrow-left me-1"></i>Volver al perfil
+    </a>
+  </div>
+</nav>
+
+<div class="page-content container py-4" style="max-width:520px">
+
+  <div class="mb-4 text-center fade-in">
+    <p class="f-section-label mb-1">Upgrade</p>
+    <h2 class="f-page-title">Actualiza a Premium</h2>
+    <p class="text-muted small">Tareas y metas ilimitadas, Pomodoro personalizable y estadísticas avanzadas.</p>
+  </div>
+
+  <div class="plan-summary mb-4 fade-in-1">
+    <ul class="list-unstyled mb-0">
+      <li><i class="bi bi-check-circle-fill"></i>Tareas y metas ilimitadas</li>
+      <li><i class="bi bi-check-circle-fill"></i>Temporizador Pomodoro personalizable</li>
+      <li><i class="bi bi-check-circle-fill"></i>Estadísticas avanzadas</li>
+    </ul>
+  </div>
+
+  <div class="card fade-in-2">
+    <div class="card-body">
+      <p class="small text-muted mb-3">
+        <i class="bi bi-info-circle me-1"></i>
+        Este es un checkout simulado para fines académicos. No se procesa ningún pago real.
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label">Número de tarjeta</label>
+        <input id="ckNumero" type="text" class="form-control" placeholder="4242 4242 4242 4242" maxlength="19">
+      </div>
+      <div class="row g-2 mb-3">
+        <div class="col-7">
+          <label class="form-label">Vencimiento</label>
+          <input id="ckVencimiento" type="text" class="form-control" placeholder="MM/AA" maxlength="5">
+        </div>
+        <div class="col-5">
+          <label class="form-label">CVC</label>
+          <input id="ckCvc" type="text" class="form-control" placeholder="123" maxlength="3">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Nombre en la tarjeta</label>
+        <input id="ckNombre" type="text" class="form-control" placeholder="Como aparece en la tarjeta">
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3 pt-2" style="border-top:1px solid var(--f-border)">
+        <span class="small text-muted">Total a pagar</span>
+        <span class="fw-600" style="font-family:'Syne',sans-serif;font-size:1.1rem">$20.00 <small class="text-muted" style="font-size:0.7rem">USD · pago único</small></span>
+      </div>
+
+      <button class="btn btn-accent w-100" id="btnConfirmar" onclick="confirmarPago()">
+        <i class="bi bi-lock-fill me-2"></i>Confirmar pago
+      </button>
+      <div id="ckError" class="small text-center mt-2" style="color:var(--f-red);display:none"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/script.js"></script>
+<script>
+checkAuth();
+
+async function confirmarPago() {
+  const numero      = document.getElementById("ckNumero").value.trim();
+  const vencimiento  = document.getElementById("ckVencimiento").value.trim();
+  const cvc          = document.getElementById("ckCvc").value.trim();
+  const nombre        = document.getElementById("ckNombre").value.trim();
+  const errorEl       = document.getElementById("ckError");
+  const boton         = document.getElementById("btnConfirmar");
+
+  if (!numero || !vencimiento || !cvc || !nombre) {
+    errorEl.textContent = "Completa todos los campos para continuar.";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  errorEl.style.display = "none";
+  boton.disabled = true;
+  boton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+
+  const ok = await actualizarAPremium();
+
+  if (ok) {
+    window.location.href = "perfil.html";
+  } else {
+    errorEl.textContent = "No se pudo actualizar la cuenta. Intenta de nuevo.";
+    errorEl.style.display = "block";
+    boton.disabled = false;
+    boton.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Confirmar pago';
+  }
+}
+</script>
+</body>
+</html>

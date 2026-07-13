@@ -1,6 +1,10 @@
 package com.focus.focuss_backend.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "metas")
@@ -9,8 +13,15 @@ public class Meta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "La descripción es obligatoria")
     private String descripcion;
+
+    @Min(value = 0, message = "El progreso no puede ser negativo")
+    @Max(value = 100, message = "El progreso no puede ser mayor a 100")
     private int progreso;
+
+    @NotNull(message = "El usuarioId es obligatorio")
     private Long usuarioId;
 
     public Meta() {}

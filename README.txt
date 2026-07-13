@@ -144,3 +144,9 @@ Data de prueba agregada en cada usuario.
 - Se añadió scripts para la base de datos
 - Ahora los datos persisten en MySQL, ya no se pierden al reiniciar.
 - Queda pendiente el método de negocio con cuenta premium, actualmente posee un demo y una cuenta gratuita
+- Las contraseñas ahora se guardan hasheadas con BCrypt (Spring Security) en vez de texto plano.
+- La respuesta de `/api/auth/login` y `/api/auth/register` ya no incluye la contraseña.
+- Se agregaron validaciones básicas (`@Valid`) en los formularios de usuario, tarea y meta.
+- El script `scripts/focuss_db.sql` ahora define `email` como `UNIQUE` y las foreign keys de `tareas`/`metas` hacia `usuarios` (`ON DELETE CASCADE`).
+
+> **Importante:** si ya tenías la base de datos `focuss_db` creada de antes, debes borrarla y volver a ejecutar `scripts/focuss_db.sql` para que tome las nuevas constraints y los passwords de prueba (hasheados). Con `ddl-auto=update`, Hibernate no agrega retroactivamente los FOREIGN KEY ni el UNIQUE a una tabla que ya existe.

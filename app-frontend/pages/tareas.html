@@ -57,6 +57,9 @@
         <div class="mb-2">
           <label class="form-label">Tiempo estimado (minutos)</label>
           <input id="inputTiempo" type="number" class="form-control" value="25" min="1">
+          <small id="tiempoPremiumHint" class="text-muted" style="display:none">
+            Personalizar el tiempo es una función Premium. <a href="checkout.html" style="color:var(--f-accent)">Actualizar cuenta</a>
+          </small>
         </div>
       </div>
       <div class="modal-footer">
@@ -73,6 +76,13 @@
 <script src="../js/script.js"></script>
 <script>
 checkAuth();
+
+if (!esPremium()) {
+  const inputTiempo = document.getElementById("inputTiempo");
+  inputTiempo.value = 25;
+  inputTiempo.disabled = true;
+  document.getElementById("tiempoPremiumHint").style.display = "block";
+}
 
 async function renderTareas() {
   const container  = document.getElementById("taskListContainer");
@@ -93,20 +103,35 @@ async function renderTareas() {
   tareas.forEach(t => {
     const li = document.createElement("li");
     li.className = "list-group-item d-flex align-items-center gap-3 px-3";
-    li.innerHTML = `
-      <input type="checkbox" class="form-check-input mt-0" ${t.done ? "checked" : ""}
-        onchange="toggleTareaAPI(${t.id}, this.checked, '${t.nombre}', ${t.tiempo})">
-      <span class="flex-grow-1 ${t.done ? 'text-decoration-line-through text-muted' : ''}">${t.nombre}</span>
-      <span class="badge-f-accent me-1">${t.tiempo} min</span>
-      <button class="btn btn-sm" style="background:var(--f-green-soft);border:1px solid rgba(0,203,169,0.2);color:var(--f-green);border-radius:8px;padding:4px 10px"
-        onclick="iniciarTarea(${t.id}, ${t.tiempo}, '${t.nombre}')" title="Iniciar timer">
-        <i class="bi bi-play-fill"></i>
-      </button>
-      <button class="btn btn-sm" style="background:var(--f-red-soft);border:1px solid rgba(255,107,129,0.2);color:var(--f-red);border-radius:8px;padding:4px 10px"
-        onclick="eliminarTarea(${t.id})">
-        <i class="bi bi-trash"></i>
-      </button>
-    `;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "form-check-input mt-0";
+    checkbox.checked = t.done;
+    checkbox.addEventListener("change", () => toggleTareaAPI(t.id, checkbox.checked, t.nombre, t.tiempo));
+
+    const nombre = document.createElement("span");
+    nombre.className = `flex-grow-1 ${t.done ? 'text-decoration-line-through text-muted' : ''}`;
+    nombre.textContent = t.nombre;
+
+    const badge = document.createElement("span");
+    badge.className = "badge-f-accent me-1";
+    badge.textContent = `${t.tiempo} min`;
+
+    const btnStart = document.createElement("button");
+    btnStart.className = "btn btn-sm";
+    btnStart.style.cssText = "background:var(--f-green-soft);border:1px solid rgba(0,203,169,0.2);color:var(--f-green);border-radius:8px;padding:4px 10px";
+    btnStart.title = "Iniciar timer";
+    btnStart.innerHTML = '<i class="bi bi-play-fill"></i>';
+    btnStart.addEventListener("click", () => iniciarTarea(t.id, t.tiempo, t.nombre));
+
+    const btnDelete = document.createElement("button");
+    btnDelete.className = "btn btn-sm";
+    btnDelete.style.cssText = "background:var(--f-red-soft);border:1px solid rgba(255,107,129,0.2);color:var(--f-red);border-radius:8px;padding:4px 10px";
+    btnDelete.innerHTML = '<i class="bi bi-trash"></i>';
+    btnDelete.addEventListener("click", () => eliminarTarea(t.id));
+
+    li.append(checkbox, nombre, badge, btnStart, btnDelete);
     ul.appendChild(li);
   });
 

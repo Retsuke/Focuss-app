@@ -141,8 +141,18 @@ const MODES = {
   short: { label:"Descanso corto", minutes:5,  tab:"tabShort" },
   long:  { label:"Descanso largo", minutes:15, tab:"tabLong"  },
 };
+
+if (esPremium()) {
+  const configGuardada = JSON.parse(localStorage.getItem("pomodoroConfig") || "null");
+  if (configGuardada) {
+    MODES.focus.minutes = configGuardada.focus;
+    MODES.short.minutes = configGuardada.short;
+    MODES.long.minutes  = configGuardada.long;
+  }
+}
+
 const CIRCUMFERENCE = 2 * Math.PI * 80;
-let currentMode = "focus", totalSec = 1500, remaining = 1500, running = false, interval = null;
+let currentMode = "focus", totalSec = MODES.focus.minutes * 60, remaining = totalSec, running = false, interval = null;
 
 let tareaActivaIndex = null;
 
@@ -166,7 +176,8 @@ function timerFinalizado() {
     document.getElementById("toastMensaje").textContent = "Es hora de volver al foco.";
   }
 
-  if (Notification.permission === "granted") {
+  const notifHabilitadas = localStorage.getItem("notifTimerEnabled") !== "false";
+  if (notifHabilitadas && Notification.permission === "granted") {
     new Notification("Focuss", { body: document.getElementById("toastMensaje").textContent });
   }
 
@@ -252,13 +263,22 @@ function renderTimerTasks() {
     li.style.borderLeft = "3px solid transparent";
     li.style.transition = "all 0.2s";
     li.style.cursor = "pointer";
-    li.innerHTML = `
-      <span class="flex-grow-1">${t.nombre}</span>
-      <span class="badge-f-accent">${t.tiempo} min</span>
-      <button class="btn btn-sm" style="background:var(--f-green-soft);border:1px solid rgba(0,203,169,0.2);color:var(--f-green);border-radius:8px;padding:4px 12px;white-space:nowrap" onclick="seleccionarTarea(${i})">
-        <i class="bi bi-play-fill me-1"></i>Usar
-      </button>
-    `;
+
+    const nombre = document.createElement("span");
+    nombre.className = "flex-grow-1";
+    nombre.textContent = t.nombre;
+
+    const badge = document.createElement("span");
+    badge.className = "badge-f-accent";
+    badge.textContent = `${t.tiempo} min`;
+
+    const btn = document.createElement("button");
+    btn.className = "btn btn-sm";
+    btn.style.cssText = "background:var(--f-green-soft);border:1px solid rgba(0,203,169,0.2);color:var(--f-green);border-radius:8px;padding:4px 12px;white-space:nowrap";
+    btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>Usar';
+    btn.addEventListener("click", () => seleccionarTarea(i));
+
+    li.append(nombre, badge, btn);
     ul.appendChild(li);
   });
   lista.appendChild(ul);
@@ -268,7 +288,8 @@ updateDisplay();
 document.addEventListener("DOMContentLoaded", () => {
   renderTimerTasks();
 
-  if (Notification.permission === "default") Notification.requestPermission();
+  const notifHabilitadas = localStorage.getItem("notifTimerEnabled") !== "false";
+  if (notifHabilitadas && Notification.permission === "default") Notification.requestPermission();
 
   const activoIndex = localStorage.getItem("tareaActiva");
   const demoTarea   = sessionStorage.getItem("demoTareaActiva");
