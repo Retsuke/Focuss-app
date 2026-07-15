@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/api";
+const API_URL = "https://focuss-app-production.up.railway.app/api";
 
 function getUsuarioActual() {
   return JSON.parse(localStorage.getItem("usuarioActual"));
